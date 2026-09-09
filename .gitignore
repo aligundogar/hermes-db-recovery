@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.db
+*.db.corrupt
+*.sqlite
+*_recover.sql
+recovered/
+out/
+examples/*.txt
+examples/*.jsonl
+examples/*.md
+!examples/README.md
