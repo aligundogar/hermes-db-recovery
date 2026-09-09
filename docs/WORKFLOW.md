@@ -78,6 +78,23 @@ Decision table from `scan`:
 4. `PRAGMA integrity_check` on the fresh file (expect `ok`)
 5. Watch service logs for residual `malformed` errors
 
+## Phase 4b - restore carved history (optional)
+
+If Phase 3 produced `<profile>_messages.jsonl` and you want the old
+conversations searchable inside the fresh database:
+
+```bash
+systemctl --user stop <owning-service>       # no concurrent WAL writer
+python3 hermes_db_import.py <profile>_messages.jsonl \
+    --db <profile>/state.db --dry-run        # preview
+python3 hermes_db_import.py <profile>_messages.jsonl \
+    --db <profile>/state.db                  # idempotent import
+systemctl --user start <owning-service>
+```
+
+Details: sessions re-created with `source="carved-import"`; messages carry a
+`carved:<sha1>` marker making re-runs no-ops; timestamps are reconstructed.
+
 ## Phase 5 - preserve the evidence
 
 Keep, forever (or until explicitly destroyed):

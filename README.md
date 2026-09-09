@@ -46,6 +46,29 @@ python3 hermes_db_carver.py messages corrupt.db -o recovered/
 python3 hermes_db_carver.py strings corrupt.db -o corrupt_strings.txt
 ```
 
+## Restore carved messages back into a fresh database
+
+Carving produces `<profile>_messages.jsonl`. To put that history back into the
+freshly initialized database (so session search finds the old conversations):
+
+```bash
+# preview first
+python3 hermes_db_import.py profile_messages.jsonl \
+    --db ~/.hermes/profiles/profile_x/state.db --dry-run
+
+# stop the owning service, then import (idempotent - safe to re-run)
+python3 hermes_db_import.py profile_messages.jsonl \
+    --db ~/.hermes/profiles/profile_x/state.db
+```
+
+- Sessions are recreated with `source = "carved-import"`, `started_at` derived
+  from the session id timestamp.
+- Messages get a deterministic `platform_message_id` marker
+  (`carved:<sha1[:16]>`) - re-running skips what is already there.
+- Message timestamps are reconstructed approximations (carved rows have no
+  original timestamps).
+- Original roles (user/assistant/system/tool) are preserved.
+
 ## The recovery workflow that worked
 
 See [docs/WORKFLOW.md](docs/WORKFLOW.md) for the full operations runbook and
